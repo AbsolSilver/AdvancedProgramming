@@ -44,7 +44,8 @@ GameObject:
   - component: {fileID: 136624931608504746}
   - component: {fileID: 114142536912035572}
   - component: {fileID: 143387000457634832}
-  m_Layer: 0
+  - component: {fileID: 114862365452544974}
+  m_Layer: 9
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -293,6 +294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weapon: {fileID: 1069133404941960}
+  cam: {fileID: 4520698025013556}
   speed: 6
   jumpSpeed: 8
   gravity: 20
@@ -308,14 +310,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baf0119adaa69cb42ab43f3da17e960c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hideCursor: 0
   target: {fileID: 4020859031260436}
-  distance: 10
-  xSpeed: 120
-  ySpeed: 120
+  offset: {x: 0, y: 1, z: 0}
   yMinLimit: -20
   yMaxLimit: 80
   distanceMin: 0.5
   distanceMax: 15
+  cameraCollision: 0
+  rayDistance: 1000
+  ignoreLayers:
+    serializedVersion: 2
+    m_Bits: 512
+  distance: 10
+  xSpeed: 120
+  ySpeed: 120
+--- !u!114 &114862365452544974
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1252535139114018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 605ff036ea2dd3847ae3913cabd48635, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 114142536912035572}
+  cam: {fileID: 114343213613537558}
 --- !u!136 &136624931608504746
 CapsuleCollider:
   m_ObjectHideFlags: 1
