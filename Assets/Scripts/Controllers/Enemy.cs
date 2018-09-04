@@ -1,10 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+// Include Artificial Intelligence part of API
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
+    public enum State
+    {
+        Patrol,
+        Seek
+    }
+    // Property
     public int Health
     {
         get
@@ -12,86 +21,101 @@ public class Enemy : MonoBehaviour
             return health;
         }
     }
-
+    public State currentState = State.Patrol;
     public NavMeshAgent agent;
+
+    public FieldOfView fov;
+    public AudioSource alertSound;
+    public GameObject alertSymbol;
+
     public Transform target;
     public Transform waypointParent;
-    public bool loop = false;
     public float distanceToWaypoint = 1f;
-
-    private Transform[] waypoints;
-    private bool pingPong = false;
-    private int currentIndex = 1;
+    public float detectionRadius = 5f;
     private int health = 100;
-    
+    private int currentIndex = 1;
+    private Transform[] waypoints;
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+    }
     void Start()
-
     {
         waypoints = waypointParent.GetComponentsInChildren<Transform>();
     }
+    void Patrol()
+    {
+        alertSymbol.SetActive(false);
 
+        if (currentIndex >= waypoints.Length)
+        {
+            currentIndex = 1;
+        }
+
+        Transform point = waypoints[currentIndex];
+
+        float distance = Vector3.Distance(transform.position, point.position);
+        if (distance <= distanceToWaypoint)
+        {
+            currentIndex++;
+        }
+
+        agent.SetDestination(point.position);
+
+        if(fov.visibleTargets.Count > 0)
+        {
+            target = fov.visibleTargets[0];
+            currentState = State.Seek;
+            alertSound.Play();
+            alertSymbol.SetActive(false);
+        }
+    }
+    void Seek()
+    {
+        // Update the AI's target position
+        agent.SetDestination(target.position);
+
+        // Get distance to target
+        float distToTarget = Vector3.Distance(transform.position, target.position);
+        // If the target is within detection range
+        if (distToTarget >= detectionRadius)
+        {
+            // Switch to 'Seek' state
+            currentState = State.Patrol;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
-        if (target)
+        switch (currentState)
         {
-            // Update the AI's target position
-            agent.SetDestination(target.position);
-        }
-        else
-        {
-            // If the currentIndex exceeds size of array
-            if (currentIndex >= waypoints.Length)
-            {
-                if (loop)
-                {
-                    // Reset back to "first" waypoint
-                    currentIndex = 1;
-                }
-                else
-                {
-                    currentIndex = waypoints.Length - 1;
-                    pingPong = true;
-                }
-            }
-
-            // If the currentIndex goes below 0
-            if (currentIndex <= 0)
-            {
-                if (loop)
-                {
-                    currentIndex = waypoints.Length - 1;
-                }
-                else
-                {
-                    // Reset back to "first" waypoint
-                    currentIndex = 1;
-                    
-                    pingPong = false;
-                }
-
-            }
-
-            Transform point = waypoints[currentIndex];
-            float distance = Vector3.Distance(transform.position, point.position);
-
-            if (distance <= distanceToWaypoint)
-            {
-                if (pingPong)
-                {
-                    currentIndex--;
-                }
-                else
-                {
-                    currentIndex++;
-                }
-
-            }
-
-            agent.SetDestination(point.position);
+            case State.Patrol:
+                Patrol();
+                break;
+            case State.Seek:
+                Seek();
+                break;
+            default:
+                break;
         }
     }
 
+    //void FixedUpdate()
+    //{
+    //    Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius);
+    //    foreach (var hit in hits)
+    //    {
+    //        Player player = hit.GetComponent<Player>();
+    //        if (player)
+    //        {
+    //            target = player.transform;
+    //            return;
+    //        }
+    //    }
+
+    //    target = null;
+    //}
     public void DealDamage(int damageDealt)
     {
         health -= damageDealt;
